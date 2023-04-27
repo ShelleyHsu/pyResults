@@ -10,6 +10,7 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
+
 def get_file_type(file_path: pathlib.Path):
     if not file_path.is_file():
         logger.error(f'cannot open file {file_path}')
@@ -20,7 +21,8 @@ def get_file_type(file_path: pathlib.Path):
     f.close()
     if head == '#!MLF!#':
         return 'mlf'
-    elif re.match(r'\S+\s.*', head):
+    elif re.match(r'\S.*', head):
+        
         return 'txt'
     else:
         return None
@@ -33,9 +35,11 @@ def load_txt_file(file_path: pathlib.Path):
     
     f = file_path.open(mode='r', encoding='utf8')
     d = {}
+    line_ctr = 1
     for line in f:
         try:
-            name, trans = line.rstrip().split(None, 1)
+            name = line_ctr
+            trans = line
         except ValueError:
             logger.error(f'{file_path}格式错误，请检查文件空格')
             exit()
@@ -60,8 +64,9 @@ def load_txt_file(file_path: pathlib.Path):
             else:
                 d[name].append(c)
         if word != '': d[name].append(word)
-            
+        line_ctr += 1
     f.close()
+    line_ctr = 1
     return d
 
 
@@ -309,7 +314,7 @@ def wer(d_ref, d_hyp, is_align=False, is_full=False):
             e_ins = n_ins / n * 100
             e_sub = n_sub / n * 100
             e_del = n_del / n * 100
-            print(f'{name}: % {corr:.2f} ({acc:.2f}) [Sub={e_sub:.2f}, Del={e_del:.2f}, Ins={e_ins:.2f}]')
+            print(f'line{name}: {corr:.2f}% ({acc:.2f}) [Sub={e_sub:.2f}, Del={e_del:.2f}, Ins={e_ins:.2f}]')
         
         total_count += n
         total_ins += n_ins
